@@ -1,0 +1,52 @@
+version: '3.7'
+services:
+  monitor:
+    image: change-monitor:latest
+    restart: unless-stopped
+      #healthcheck:
+      #test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
+      #timeout: 45s
+      #interval: 10s
+      #retries: 10
+    environment:
+      - PDB_HOST=postgres
+      - PDB_NAME=product
+      - PDB_USER=postgres
+      - PDB_PASS=postgres
+      - RDB_HOST_PORT=cache:6379
+      - ENABLE_TRIGGERS=true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - cache
+  postgres:
+    image: postgres:10.5
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=postgres
+      - DB_NAME=product
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+    - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+        #- ./sql/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - ./sql/products.sql:/docker-entrypoint-initdb.d/products.sql
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1
+    volumes: 
+      - cache:/data
+volumes:
+  cache:
+  postgres-data:
