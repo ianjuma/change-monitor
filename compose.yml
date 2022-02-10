@@ -14,7 +14,7 @@ services:
       - PDB_USER=postgres
       - PDB_PASS=postgres
       - RDB_HOST_PORT=cache:6379
-      - LOG_LEVEL=trace
+      - LOG_LEVEL=debug
       - ENABLE_TRIGGERS=true
     build:
       context: .

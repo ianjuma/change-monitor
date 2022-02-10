@@ -3,6 +3,7 @@ package sa
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -55,7 +56,8 @@ func listenForActiveEvent(ctx context.Context,
 		select {
 		case event := <-l.Notify:
 			log.WithFields(log.Fields{
-				"op": op,
+				"op":    op,
+				"event": event,
 			}).Info("received event")
 			eventChan <- event
 
@@ -101,13 +103,36 @@ func processProductEvent(p *pq.Notification) {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), RedisTimeout)
 		defer cancel()
-		log.Info(p.Extra, activeQueueName)
-		Rdb.LPush(ctx, activeQueueName, p.Extra) //panic
+
+		p, err := json.Marshal(product.New)
+		if err != nil {
+			panic(err)
+		}
+
+		key := fmt.Sprintf("%s:%d", "product", product.New.ProductID)
+		err = Rdb.Set(ctx, key, p, 0).Err()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"op":  op,
+				"err": err,
+			}).Error("failed to write product.active evt")
+		}
 
 	case insertEvent:
 		ctx, cancel := context.WithTimeout(context.Background(), RedisTimeout)
 		defer cancel()
-		log.Info(p.Extra, insertQueueName)
-		Rdb.LPush(ctx, insertQueueName, p.Extra) //panic
+		p, err := json.Marshal(product.New)
+		if err != nil {
+			panic(err)
+		}
+
+		key := fmt.Sprintf("%s:%d", "product", product.New.ProductID)
+		err = Rdb.Set(ctx, key, p, 0).Err()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"op":  op,
+				"err": err,
+			}).Error("failed to write product.insert evt")
+		}
 	}
 }

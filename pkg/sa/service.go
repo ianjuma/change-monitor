@@ -23,10 +23,8 @@ const (
 	activeEvent = "product_active_change_event"
 	insertEvent = "product_insert_event"
 
-	activeQueueName = "product:active-change"
-	insertQueueName = "product:insert"
-	timeout         = 11
-	maxChannelSize  = 33 // big enough channel capacity to avoid blocking and hold events when redis is down
+	timeout        = 11
+	maxChannelSize = 33 // big enough channel capacity to avoid blocking and hold events when redis is down
 )
 
 var (
