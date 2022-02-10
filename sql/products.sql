@@ -12,9 +12,16 @@ CREATE TABLE IF NOT EXISTS product (
   PRIMARY KEY (product_id)
 );
 
-SET session my.number_of_products = '30';
+INSERT INTO product (product_id, name, active, quantity, price) 
+VALUES (1, 'omo', True, 10, 1);
 
--- Filling of products
-INSERT INTO product
-select id, concat('Product ', id) 
-FROM GENERATE_SERIES(1, current_setting('my.number_of_products')::int) as id;
+INSERT INTO product (product_id, name, active, quantity, price) 
+VALUES (2, 'pencil', True, 10, 2);
+
+INSERT INTO product (product_id, name, active, quantity, price) 
+VALUES (3, 'blue band', True, 10, 5);
+
+INSERT INTO product (product_id, name, active, quantity, price) 
+VALUES (4, 'washing powder', True, 10, 2);
+
+-- update product set active=False where product_id=1;

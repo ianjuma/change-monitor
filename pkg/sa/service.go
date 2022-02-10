@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	_ "github.com/ianjuma/change-monitor/sa/init"
 	"github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,6 +33,18 @@ const (
 var (
 	Rdb *redis.Client
 )
+
+// func init() {
+// 	log.SetLevel(SetLogLevel(LogLevel))
+// 	log.Info("initialising rdb client")
+// 	Rdb = redis.NewClient(&redis.Options{
+// 		Addr: RdbHostPort,
+// 		DB:   0,
+// 	})
+// 	if Rdb == nil {
+// 		panic("redis failed to init")
+// 	}
+// }
 
 func Init() {
 	//  wait for postgres and dependencies to be ready
@@ -97,7 +110,7 @@ func Init() {
 	}).Info("entering main loop")
 
 	quitChan := make(chan os.Signal, 1) // processing pending events
-	signal.Notify(quitChan, syscall.SIGTERM, os.Interrupt, os.Kill)
+	signal.Notify(quitChan, syscall.SIGTERM, os.Interrupt)
 	productEventChannel := make(chan *pq.Notification, maxChannelSize)
 
 	ctx, cancel := context.WithCancel(context.Background())

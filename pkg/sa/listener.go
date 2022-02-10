@@ -24,9 +24,7 @@ func listenForInsertEvent(ctx context.Context, l *pq.Listener, eventChan chan<- 
 				"op":    op,
 				"event": event,
 			}).Debug("received notification")
-			// todo: ctx to cancel goroutine
-			eventChan <- event // does not need a goroutine - just send to channel, but, we do not want to block the listener
-			// ensure delivery of message, no need to process buffer
+			eventChan <- event
 
 		case <-time.After(ListenerTimeout): // avoid a timeout on listen, yield after timeout
 			go func() {
@@ -48,7 +46,9 @@ func listenForInsertEvent(ctx context.Context, l *pq.Listener, eventChan chan<- 
 	}
 }
 
-func listenForActiveEvent(ctx context.Context, l *pq.Listener, eventChan chan<- *pq.Notification) {
+func listenForActiveEvent(ctx context.Context,
+	l *pq.Listener,
+	eventChan chan<- *pq.Notification) {
 	const op = "product.listenForActiveEvent"
 
 	for {
@@ -96,16 +96,18 @@ func processProductEvent(p *pq.Notification) {
 
 	switch p.Channel {
 	case activeEvent:
-		if !quantityChanged(product) {
+		if !activeChanged(product) {
 			return
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), RedisTimeout)
 		defer cancel()
-		Rdb.LPush(ctx, activeQueueName, p.Extra)
+		log.Info(p.Extra, activeQueueName)
+		Rdb.LPush(ctx, activeQueueName, p.Extra) //panic
 
 	case insertEvent:
 		ctx, cancel := context.WithTimeout(context.Background(), RedisTimeout)
 		defer cancel()
-		Rdb.LPush(ctx, insertQueueName, p.Extra)
+		log.Info(p.Extra, insertQueueName)
+		Rdb.LPush(ctx, insertQueueName, p.Extra) //panic
 	}
 }

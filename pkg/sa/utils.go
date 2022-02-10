@@ -22,8 +22,8 @@ func monitorBuffer(length int, capacity int) {
 	}
 }
 
-func quantityChanged(product ProductEvent) bool {
-	return product.Old.Quantity != product.New.Quantity
+func activeChanged(product ProductEvent) bool {
+	return product.Old.Active != product.New.Active
 }
 
 func SetLogLevel(level string) log.Level {

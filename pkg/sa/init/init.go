@@ -8,11 +8,13 @@ import (
 )
 
 func init() {
-
+	log.SetLevel(sa.SetLogLevel(sa.LogLevel))
 	log.Info("initialising rdb client")
 	sa.Rdb = redis.NewClient(&redis.Options{
 		Addr: sa.RdbHostPort,
 		DB:   0,
 	})
-	log.SetLevel(sa.SetLogLevel(sa.LogLevel))
+	if sa.Rdb == nil {
+		panic("redis failed to init")
+	}
 }
